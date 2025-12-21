@@ -55,7 +55,7 @@ export default function Header() {
           {isAuthenticated && (
             <div className="user-section">
               <span className="user-info">
-                {user?.username} {user?.role && `(${user.role})`}
+                {user?.username} {user?.role && `(${(user.role || '').toLowerCase()})`}
               </span>
               <button className="logout-btn" onClick={handleLogout}>
                 🚪 Déconnexion

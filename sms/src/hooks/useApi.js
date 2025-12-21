@@ -190,5 +190,62 @@ export const useUsers = (enabled = true) => {
     fetchUsers();
   }, [enabled]);
 
-  return { data, loading, error };
+  // CREATE user
+  const createUser = async (userData) => {
+    try {
+      const newUser = await apiClient.createUser(userData);
+      const transformed = {
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role
+      };
+      setData([...data, transformed]);
+      return transformed;
+    } catch (err) {
+      console.error('Error creating user:', err);
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // UPDATE user
+  const updateUser = async (id, userData) => {
+    try {
+      const updatedUser = await apiClient.updateUser(id, userData);
+      const transformed = {
+        id: updatedUser._id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        role: updatedUser.role
+      };
+      setData(data.map(user => user.id === id ? transformed : user));
+      return transformed;
+    } catch (err) {
+      console.error('Error updating user:', err);
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // DELETE user
+  const deleteUser = async (id) => {
+    try {
+      await apiClient.deleteUser(id);
+      setData(data.filter(user => user.id !== id));
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  return { 
+    data, 
+    loading, 
+    error,
+    createUser,
+    updateUser,
+    deleteUser
+  };
 };

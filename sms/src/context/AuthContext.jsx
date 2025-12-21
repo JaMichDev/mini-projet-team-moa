@@ -34,15 +34,19 @@ export const AuthProvider = ({ children }) => {
 
       const authToken = payload.token;
       const authUser = payload.user || { email };
+      const normalizedUser = {
+        ...authUser,
+        role: authUser.role ? authUser.role.toLowerCase() : undefined
+      };
 
       if (!authToken) {
         throw new Error("Token manquant dans la réponse du serveur.");
       }
 
       setToken(authToken);
-      setUser(authUser);
+      setUser(normalizedUser);
       localStorage.setItem("authToken", authToken);
-      localStorage.setItem("user", JSON.stringify(authUser));
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
     } finally {
       setLoading(false);
     }

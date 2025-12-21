@@ -7,10 +7,32 @@ const router = express.Router();
 
 router.use(auth);
 
-// List grades with student + course info
+// List grades (students see only their grades, teachers/admins see all)
 router.get('/', async (req, res) => {
   try {
-    const grades = await Grade.find()
+    const role = (req.user?.role || '').toLowerCase();
+    let query = {};
+    
+    // Si c'est un étudiant, voir uniquement ses notes
+    if (role === 'student') {
+      // Trouver l'étudiant lié à cet utilisateur (par userId ou email)
+      const { Student, User } = require('../models');
+      const user = await User.findById(req.userId).lean();
+      
+      const student = await Student.findOne({
+        $or: [
+          { userId: req.userId },
+          { email: user?.email }
+        ]
+      }).lean();
+      
+      if (!student) {
+        return res.json([]);
+      }
+      query.student = student._id;
+    }
+    
+    const grades = await Grade.find(query)
       .populate('student', 'firstName lastName email')
       .populate('course', 'name code')
       .lean();

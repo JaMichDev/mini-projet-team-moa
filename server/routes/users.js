@@ -33,8 +33,11 @@ router.post('/login', async (req, res) => {
     const valid = await user.comparePassword(password);
     if (!valid) return res.status(401).json({ error: 'Invalid email or password' });
 
+    // Normalize role to lowercase
+    const normalizedRole = (user.role || '').toLowerCase();
+
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { userId: user._id, role: normalizedRole },
       process.env.JWT_SECRET || 'your_jwt_secret',
       { expiresIn: '1d' }
     );
@@ -45,11 +48,25 @@ router.post('/login', async (req, res) => {
         _id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: normalizedRole
       }
     });
   } catch (error) {
     res.status(500).json({ error: 'Unable to login' });
+  }
+});
+
+// Diagnostic: retourne le rôle et l'identité issus du token
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('_id username email role');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({
+      tokenPayload: { userId: req.user?.userId, role: req.user?.role },
+      user
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Unable to fetch profile' });
   }
 });
 

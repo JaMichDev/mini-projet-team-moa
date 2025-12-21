@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useUsers } from '../../hooks/useApi';
 import apiClient from '../../api/apiClient';
+import { useAuth } from '../../context/AuthContext';
 
 function Users() {
-  const { data: users, loading, error } = useUsers();
+  const { user } = useAuth();
+  const role = (user?.role || '').toLowerCase();
+  const isAdmin = role === 'admin';
+  const { data: users, loading, error } = useUsers(isAdmin);
   const [localUsers, setLocalUsers] = useState([]);
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
@@ -128,6 +132,17 @@ function Users() {
     }
   };
 
+  if (!isAdmin) {
+    return (
+      <div style={{ padding: 40, textAlign: 'center' }}>
+        <div style={{ fontSize: 24, color: '#dc2626' }}>⚠️ Accès refusé</div>
+        <div style={{ marginTop: 16, color: '#666' }}>
+          Cette page est réservée aux administrateurs. Rôle actuel: {user?.role || 'inconnu'}
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div style={{ padding: 40, textAlign: 'center' }}>
@@ -141,6 +156,9 @@ function Users() {
       <div style={{ padding: 40, textAlign: 'center' }}>
         <div style={{ fontSize: 24, color: '#dc2626' }}>⚠️ Erreur</div>
         <div style={{ marginTop: 16, color: '#666' }}>{error}</div>
+        <div style={{ marginTop: 8, color: '#666' }}>
+          Astuce: si vous avez récemment changé de rôle, déconnectez-vous puis reconnectez-vous pour régénérer le token.
+        </div>
       </div>
     );
   }

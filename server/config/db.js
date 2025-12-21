@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const uri = process.env.MONGODB_URI || 'mongodb+srv://orelus_db_user:Admin123@cluster0.szo0cmo.mongodb.net/student_management?retryWrites=true&w=majority';
+    // Prefer environment variable; fallback to a sensible default with an explicit DB name
+    const uri = process.env.MONGODB_URI || 'mongodb+srv://orelus_db_user:Admin123@cluster0.szo0cmo.mongodb.net/sms?retryWrites=true&w=majority&appName=Cluster0';
+
     await mongoose.connect(uri);
     console.log('✅ MongoDB connected successfully');
   } catch (error) {

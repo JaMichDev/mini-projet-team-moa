@@ -7,6 +7,21 @@ const getAuthHeader = () => {
 };
 
 const apiClient = {
+  // Auth diagnostics
+  async getMe() {
+    const res = await fetch(`${API_BASE_URL}/users/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader()
+      }
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to fetch profile');
+    }
+    return res.json();
+  },
   // Grades
   async getGrades() {
     const res = await fetch(`${API_BASE_URL}/grades`, {

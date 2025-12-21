@@ -8,10 +8,25 @@ const router = express.Router();
 // Require authentication for all student routes
 router.use(auth);
 
-// List students
+// List students (students see only themselves, teachers/admins see all)
 router.get('/', async (req, res) => {
   try {
-    const students = await Student.find().lean();
+    let query = {};
+    const role = (req.user?.role || '').toLowerCase();
+    
+    // Si c'est un étudiant, voir uniquement son profil
+    if (role === 'student') {
+      // Chercher d'abord par userId, sinon par email
+      const { User } = require('../models');
+      const user = await User.findById(req.userId).lean();
+      
+      query.$or = [
+        { userId: req.userId },
+        { email: user?.email }
+      ];
+    }
+    
+    const students = await Student.find(query).lean();
     res.json(students);
   } catch (error) {
     res.status(500).json({ error: 'Unable to fetch students' });
