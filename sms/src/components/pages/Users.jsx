@@ -27,6 +27,7 @@ function Users() {
     teacher: 'Scolarité',
     student: 'Étudiant'
   };
+  
 
   useEffect(() => {
     setLocalUsers(users || []);

@@ -188,8 +188,59 @@ const apiClient = {
       throw new Error(error.error || 'Failed to delete user');
     }
     return res.json();
+  },
+
+  //create student
+  async createStudent(studentData) {
+    const res = await fetch(`${API_BASE_URL}/students`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader()
+      },
+      body: JSON.stringify(studentData)
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to create student');
+    }
+    return res.json();
+  },
+
+  //DELETE student
+  async deleteStudent(id) {
+    const res = await fetch(`${API_BASE_URL}/students/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader()
+      }
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to delete student');
+    }
+    return res.json();
+  },
+
+  //UPDATE student
+  async updateStudent(id, studentData) {
+    const res = await fetch(`${API_BASE_URL}/students/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader()
+      },
+      body: JSON.stringify(studentData)
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to update student');
+    }
+    return res.json();
   }
 };
+
 
 export default apiClient;
 

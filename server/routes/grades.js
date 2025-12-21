@@ -42,8 +42,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Create grade (admin/teacher)
-router.post('/', authorize('admin', 'teacher'), async (req, res) => {
+// Create grade (admin/scolarite)
+router.post('/', authorize('admin', 'scolarite'), async (req, res) => {
   try {
     const { student, course, grade, date } = req.body;
     const created = await Grade.create({ student, course, grade, date });
@@ -56,8 +56,8 @@ router.post('/', authorize('admin', 'teacher'), async (req, res) => {
   }
 });
 
-// Update grade (admin/teacher)
-router.put('/:id', authorize('admin', 'teacher'), async (req, res) => {
+// Update grade (admin/scolarite)
+router.put('/:id', authorize('admin', 'scolarite'), async (req, res) => {
   try {
     const { student, course, grade, date } = req.body;
     const updated = await Grade.findByIdAndUpdate(
@@ -75,8 +75,8 @@ router.put('/:id', authorize('admin', 'teacher'), async (req, res) => {
   }
 });
 
-// Delete grade (admin/teacher)
-router.delete('/:id', authorize('admin', 'teacher'), async (req, res) => {
+// Delete grade (admin/scolarite)
+router.delete('/:id', authorize('admin', 'scolarite'), async (req, res) => {
   try {
     const deleted = await Grade.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ error: 'Grade not found' });

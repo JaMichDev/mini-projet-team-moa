@@ -54,5 +54,6 @@ export const menuItems = [
     icon: 'ℹ️',
     color: '#f59e0b',
     path: '/about'
-  }
+  },
+   
 ];

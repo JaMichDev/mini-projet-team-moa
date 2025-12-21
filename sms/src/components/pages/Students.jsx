@@ -1,12 +1,30 @@
 import { useState, useMemo } from 'react';
 import { useStudents } from '../../hooks/useApi';
+import { useAuth } from '../../context/AuthContext';
+import apiClient from '../../api/apiClient';
+import './Students.css';
 
 export default function Students() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
+  const { user } = useAuth();
 
-  const { data: students = [], loading, error } = useStudents();
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: ''
+  });
+
+  const { data: students = [], loading: dataLoading, error } = useStudents();
+
+  // Check if user can create/edit/delete
+  const canModify = user?.role === 'admin' || user?.role === 'scolarite';
 
   // Filter students based on search
   const filteredStudents = useMemo(() => {
@@ -15,6 +33,7 @@ export default function Students() {
     return students.filter(s => 
       (s.firstname || '').toLowerCase().includes(term) ||
       (s.lastname || '').toLowerCase().includes(term) ||
+      (s.email || '').toLowerCase().includes(term) ||
       (s.id || '').toLowerCase().includes(term)
     );
   }, [students, searchTerm]);
@@ -42,7 +61,95 @@ export default function Students() {
     return sorted.slice(start, start + pageSize);
   }, [sorted, page, pageSize]);
 
-  if (loading) return <main className="Main page-content"><p>📥 Loading students...</p></main>;
+  const resetForm = () => {
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: ''
+    });
+    setEditingId(null);
+  };
+
+  const handleEdit = (student) => {
+    setFormData({
+      firstName: student.firstname || '',
+      lastName: student.lastname || '',
+      email: student.email || ''
+    });
+    setEditingId(student.id);
+    setShowForm(true);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setLoading(true);
+
+    try {
+      if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
+        setMessage('Le prénom, le nom et l\'email sont obligatoires');
+        setMessageType('error');
+        setLoading(false);
+        return;
+      }
+
+      const studentData = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim()
+      };
+
+      if (editingId) {
+        // Update student
+        await apiClient.updateStudent(editingId, studentData);
+        setMessage('Étudiant mis à jour avec succès!');
+      } else {
+        // Create student
+        await apiClient.createStudent(studentData);
+        setMessage('Étudiant créé avec succès!');
+      }
+      setMessageType('success');
+      resetForm();
+      setShowForm(false);
+      // Refresh the list
+      window.location.reload();
+    } catch (err) {
+      setMessage(err.message || 'Erreur lors de l\'opération');
+      setMessageType('error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (studentId) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet étudiant?')) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await apiClient.deleteStudent(studentId);
+      setMessage('Étudiant supprimé avec succès!');
+      setMessageType('success');
+      // Refresh the list
+      window.location.reload();
+    } catch (err) {
+      setMessage(err.message || 'Erreur lors de la suppression');
+      setMessageType('error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (dataLoading) return <main className="Main page-content"><p>📥 Loading students...</p></main>;
   if (error) return <main className="Main page-content"><p>❌ Error: {error}</p></main>;
 
   const goTo = (n) => setPage(Math.min(Math.max(1, n), totalPages));
@@ -60,7 +167,7 @@ export default function Students() {
         <div style={{display:'flex',gap:12,alignItems:'center'}}>
           <input
             type="text"
-            placeholder="Search by name or ID..."
+            placeholder="Search by name or email..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -87,25 +194,151 @@ export default function Students() {
             <option value={50}>50 per page</option>
             <option value={0}>Show all</option>
           </select>
+
+          {canModify && (
+            <button
+              onClick={() => {
+                resetForm();
+                setShowForm(!showForm);
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: 4,
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              {showForm ? '✕ Annuler' : '➕ Ajouter'}
+            </button>
+          )}
         </div>
       </header>
+
+      {message && (
+        <div className={`alert alert-${messageType}`} style={{marginBottom: 20}}>
+          {message}
+        </div>
+      )}
+
+      {showForm && canModify && (
+        <div className="form-card" style={{marginBottom: 30}}>
+          <h2>{editingId ? 'Modifier un étudiant' : 'Créer un nouvel étudiant'}</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="firstName">Prénom *</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="Ex: Jean"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="lastName">Nom *</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Ex: Dupont"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">Email *</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Ex: jean.dupont@example.com"
+                required
+              />
+            </div>
+
+
+
+            <div className="form-actions">
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 4,
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold',
+                  opacity: loading ? 0.6 : 1
+                }}
+              >
+                {loading ? 'En cours...' : editingId ? 'Modifier' : 'Créer'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <table style={{width:'100%',borderCollapse:'collapse'}}>
         <thead>
           <tr style={{borderBottom:'2px solid #333'}}>
-            <th style={{textAlign:'left',padding:12}}>ID</th>
             <th style={{textAlign:'left',padding:12}}>First Name</th>
             <th style={{textAlign:'left',padding:12}}>Last Name</th>
             <th style={{textAlign:'left',padding:12}}>Email</th>
+            {canModify && <th style={{textAlign:'center',padding:12}}>Actions</th>}
           </tr>
         </thead>
         <tbody>
           {visible.map((student) => (
             <tr key={student.id} style={{borderBottom:'1px solid #eee'}}>
-              <td style={{padding:12}}>{student.id}</td>
               <td style={{padding:12}}>{student.firstname}</td>
               <td style={{padding:12}}>{student.lastname}</td>
               <td style={{padding:12}}>{student.email || '—'}</td>
+              {canModify && (
+                <td style={{padding:12, textAlign:'center'}}>
+                  <button
+                    onClick={() => handleEdit(student)}
+                    style={{
+                      padding: '4px 8px',
+                      marginRight: 8,
+                      backgroundColor: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    ✎ Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(student.id)}
+                    style={{
+                      padding: '4px 8px',
+                      backgroundColor: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    🗑️ Delete
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

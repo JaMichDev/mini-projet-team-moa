@@ -6,6 +6,7 @@ const authorize = require('../middleware/authorize');
 
 const router = express.Router();
 
+
 // Register new user (open to allow first admin creation)
 router.post('/register', async (req, res) => {
   try {
@@ -113,6 +114,8 @@ router.delete('/:id', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Unable to delete user' });
   }
+
+  
 });
 
 module.exports = router;

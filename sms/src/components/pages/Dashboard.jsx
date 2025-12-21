@@ -59,7 +59,7 @@ function Dashboard() {
       </header>
 
       {/* Admin & Teacher: global stats */}
-      {(role === 'admin' || role === 'teacher') && (
+      {(role === 'admin' || role === 'scolarite') && (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24, marginBottom: 32 }}>
             {role === 'admin' && (

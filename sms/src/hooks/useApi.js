@@ -78,7 +78,10 @@ export const useStudents = () => {
           id: student._id,
           firstname: student.firstName,
           lastname: student.lastName,
-          email: student.email
+          email: student.email,
+          phone: student.phone,
+          dateOfBirth: student.dateOfBirth,
+          address: student.address
         }));
         
         console.log('✅ Transformed students:', transformedStudents);

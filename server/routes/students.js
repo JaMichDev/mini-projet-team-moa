@@ -18,10 +18,10 @@ router.get('/', async (req, res) => {
     if (role === 'student') {
       // Chercher d'abord par userId, sinon par email
       const { User } = require('../models');
-      const user = await User.findById(req.userId).lean();
+      const user = await User.findById(req.user.id).lean();
       
       query.$or = [
-        { userId: req.userId },
+        { userId: req.user.id },
         { email: user?.email }
       ];
     }
@@ -29,12 +29,13 @@ router.get('/', async (req, res) => {
     const students = await Student.find(query).lean();
     res.json(students);
   } catch (error) {
+    console.error('Error fetching students:', error);
     res.status(500).json({ error: 'Unable to fetch students' });
   }
 });
 
-// Create a student (admin/teacher)
-router.post('/', authorize('admin', 'teacher'), async (req, res) => {
+// Create a student (admin/scolarite)
+router.post('/', authorize('admin', 'scolarite'), async (req, res) => {
   try {
     const { firstName, lastName, email } = req.body;
     const student = await Student.create({ firstName, lastName, email });
@@ -44,8 +45,8 @@ router.post('/', authorize('admin', 'teacher'), async (req, res) => {
   }
 });
 
-// Update a student (admin/teacher)
-router.put('/:id', authorize('admin', 'teacher'), async (req, res) => {
+// Update a student (admin/scolarite)
+router.put('/:id', authorize('admin', 'scolarite'), async (req, res) => {
   try {
     const { firstName, lastName, email } = req.body;
     const updated = await Student.findByIdAndUpdate(

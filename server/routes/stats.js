@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
         minGrade,
         gradesByCourse
       };
-    } else if (role === 'teacher') {
+    } else if (role === 'scolarite') {
       // Scolarité: vision sur étudiants, cours, notes
       const [studentCount, courseCount, gradeCount] = await Promise.all([
         Student.countDocuments(),
