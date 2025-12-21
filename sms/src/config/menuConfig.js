@@ -3,7 +3,7 @@ export const menuItems = [
     id: 'home',
     label: 'Home',
     description: 'Random Draw',
-    icon: '🎲',
+    icon: '�',
     color: '#3b82f6',
     path: '/home'
   },

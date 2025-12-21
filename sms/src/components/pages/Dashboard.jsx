@@ -53,8 +53,9 @@ function Dashboard() {
         </h1>
         <p style={{ color: '#666', fontSize: 16 }}>
           {role === 'admin' && 'Vision globale - Administrateur'}
-          {role === 'teacher' && 'Vision scolarité'}
+          {role === 'scolarite' && 'Vision scolarité'}
           {role === 'student' && 'Mon dossier étudiant'}
+          {!['admin', 'scolarite', 'student'].includes(role) && 'Rôle inconnu'}
         </p>
       </header>
 
