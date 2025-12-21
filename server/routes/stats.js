@@ -73,7 +73,7 @@ router.get('/', async (req, res) => {
       ]);
 
       stats = {
-        role: 'teacher',
+        role: 'scolarite',
         totalStudents: studentCount,
         totalCourses: courseCount,
         totalGrades: gradeCount,

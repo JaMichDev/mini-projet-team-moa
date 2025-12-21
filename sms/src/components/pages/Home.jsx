@@ -32,9 +32,9 @@ export default function Home() {
   const role = user?.role || 'student';
 
   const canManageUsers = role === 'admin';
-  const canManageStudents = role === 'admin' || role === 'teacher';
-  const canManageCourses = role === 'admin' || role === 'teacher';
-  const canManageGrades = role === 'admin' || role === 'teacher' || role === 'student';
+  const canManageStudents = role === 'admin' || role === 'scolarite';
+  const canManageCourses = role === 'admin' || role === 'scolarite';
+  const canManageGrades = role === 'admin' || role === 'scolarite' || role === 'student';
 
   const { data: students } = useStudents();
   const { data: courses } = useCourses();

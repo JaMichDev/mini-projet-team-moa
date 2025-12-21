@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', authorize('admin', 'teacher'), async (req, res) => {
+router.post('/', authorize('admin', 'scolarite'), async (req, res) => {
   try {
     const { name, code } = req.body;
     const course = await Course.create({ name, code });
@@ -26,7 +26,7 @@ router.post('/', authorize('admin', 'teacher'), async (req, res) => {
   }
 });
 
-router.put('/:id', authorize('admin', 'teacher'), async (req, res) => {
+router.put('/:id', authorize('admin', 'scolarite'), async (req, res) => {
   try {
     const { name, code } = req.body;
     const updated = await Course.findByIdAndUpdate(

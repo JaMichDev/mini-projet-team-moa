@@ -224,7 +224,7 @@ function Users() {
                     fontWeight: 600,
                     backgroundColor:
                       user.role === 'admin' ? '#ef4444' :
-                      user.role === 'teacher' ? '#3b82f6' :
+                      user.role === 'scolarite' ? '#3b82f6' :
                       '#10b981',
                     color: 'white'
                   }}
@@ -394,7 +394,7 @@ function Users() {
                   }}
                 >
                   <option value="student">Étudiant</option>
-                  <option value="teacher">Scolarité</option>
+                  <option value="scolarite">Scolarité</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>

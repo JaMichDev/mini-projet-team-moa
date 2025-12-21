@@ -121,7 +121,7 @@ async function test() {
       username: 'john_teacher',
       email: 'john@school.com',
       password: 'Teacher123!',
-      role: 'teacher'
+      role: 'scolarite'
     };
     console.log('Request:', JSON.stringify(newUserData, null, 2));
     
