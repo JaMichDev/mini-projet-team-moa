@@ -44,3 +44,12 @@ html[data-theme='dark'] body {
     #0b1220;
   background-attachment: fixed;
 }
+
+/* Remove gradient background for login page */
+.login-page {
+  background: #ffffff !important;
+}
+
+html[data-theme='dark'] .login-page {
+  background: #0f172a !important;
+}

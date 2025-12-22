@@ -174,142 +174,176 @@ export default function Home() {
 
   const COLORS = [theme.palette.primary.main, theme.palette.info.main, theme.palette.success.main, theme.palette.warning.main, theme.palette.error.main];
 
+  const chartCards = [
+    grades && grades.length > 0 && {
+      key: 'grades',
+      content: (
+        <Card sx={{ height: '100%' }}>
+          <CardHeader title="Distribution des Notes" />
+          <CardContent>
+            <ResponsiveContainer width="100%" height={340}>
+              <PieChart>
+                <Pie
+                  data={gradeDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={120}
+                  dataKey="value"
+                >
+                  {gradeDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ fontSize: 13 }} />
+                <Legend wrapperStyle={{ fontSize: 13 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      ),
+    },
+    students && students.length > 0 && {
+      key: 'students',
+      content: (
+        <Card sx={{ height: '100%' }}>
+          <CardHeader title="Croissance des Inscriptions" />
+          <CardContent>
+            <ResponsiveContainer width="100%" height={340}>
+              <LineChart data={studentGrowth}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip contentStyle={{ fontSize: 13 }} />
+                <Line
+                  type="monotone"
+                  dataKey="inscriptions"
+                  stroke={theme.palette.primary.main}
+                  strokeWidth={3}
+                  dot={{ fill: theme.palette.primary.main, r: 5 }}
+                  activeDot={{ r: 7 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      ),
+    },
+    courseStats.length > 0 && {
+      key: 'course-area',
+      content: (
+        <Card sx={{ height: '100%' }}>
+          <CardHeader title="Moyenne par Cours (/100)" />
+          <CardContent>
+            <ResponsiveContainer width="100%" height={360}>
+              <AreaChart data={courseStats}>
+                <defs>
+                  <linearGradient id="avgFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={theme.palette.primary.main} stopOpacity={0.5} />
+                    <stop offset="100%" stopColor={theme.palette.primary.main} stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+                <Tooltip contentStyle={{ fontSize: 13 }} />
+                <Area type="monotone" dataKey="average" name="Moyenne" stroke={theme.palette.primary.main} strokeWidth={3} fill="url(#avgFill)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      ),
+    },
+    courseStats.length > 0 && {
+      key: 'course-scatter',
+      content: (
+        <Card sx={{ height: '100%' }}>
+          <CardHeader title="Relation: Moyenne vs Étudiants" />
+          <CardContent>
+            <ResponsiveContainer width="100%" height={360}>
+              <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" dataKey="average" name="Moyenne" domain={[0, 100]} tick={{ fontSize: 12 }} />
+                <YAxis type="number" dataKey="count" name="Étudiants" tick={{ fontSize: 12 }} />
+                <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ fontSize: 13 }} />
+                <Legend wrapperStyle={{ fontSize: 13 }} />
+                <Scatter name="Cours" data={courseStats} fill={theme.palette.info.main} />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      ),
+    },
+  ].filter(Boolean);
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Hero Section */}
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h3"
-          sx={{
-            fontWeight: 800,
-            mb: 1,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          Plateforme MBDS
-        </Typography>
-        <Typography variant="body1" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
-          Gestion académique centralisée — Superviser, sécuriser et piloter vos données avec contrôle des rôles.
-        </Typography>
-      </Box>
+      <Card sx={{ mb: 4, border: `1px solid ${theme.palette.divider}` }}>
+        <CardContent sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 800,
+                mb: 0.5,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Plateforme MBDS
+            </Typography>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+              Gestion académique centralisée — supervision, sécurité, pilotage et rôles différenciés.
+            </Typography>
+          </Box>
+
+          <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, display: 'block' }}>
+              Utilisateur connecté
+            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              {user?.username || 'Invité'}
+            </Typography>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+              Rôle : {role}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Stats Row */}
       <Grid container spacing={2} sx={{ mb: 4 }}>
         {stats.map((s) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={s.label}>
+          <Grid item xs={12} sm={6} md={3} key={s.label}>
             <StatCard label={s.label} value={s.value} hint={s.hint} color={s.color} icon={s.icon} />
           </Grid>
         ))}
       </Grid>
 
       {/* Charts Section */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* Grade Distribution Pie Chart */}
-        {grades && grades.length > 0 && (
-          <Grid item xs={12} sm={6}>
-            <Card>
-              <CardHeader title="Distribution des Notes" />
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={gradeDistribution}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {gradeDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
-
-        {/* Student Growth Line Chart */}
-        {students && students.length > 0 && (
-          <Grid item xs={12} sm={6}>
-            <Card>
-              <CardHeader title="Croissance des Inscriptions" />
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={studentGrowth}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="inscriptions"
-                      stroke={theme.palette.primary.main}
-                      strokeWidth={3}
-                      dot={{ fill: theme.palette.primary.main, r: 5 }}
-                      activeDot={{ r: 7 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
-
-        {/* Course Performance Charts: Area + Scatter */}
-        {courseStats.length > 0 && (
-          <>
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardHeader title="Moyenne par Cours (/100)" />
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={320}>
-                    <AreaChart data={courseStats}>
-                      <defs>
-                        <linearGradient id="avgFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={theme.palette.primary.main} stopOpacity={0.5} />
-                          <stop offset="100%" stopColor={theme.palette.primary.main} stopOpacity={0.05} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis domain={[0, 100]} />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="average" name="Moyenne" stroke={theme.palette.primary.main} strokeWidth={3} fill="url(#avgFill)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+      {chartCards.length > 0 && (
+        <Card sx={{ mb: 4 }}>
+          <CardHeader
+            title="Analyses principales"
+            subheader="Visualisez rapidement les tendances clés"
+            titleTypographyProps={{ variant: 'h5', fontWeight: 800 }}
+            subheaderTypographyProps={{ variant: 'body1' }}
+          />
+          <CardContent>
+            <Grid container spacing={3}>
+              {chartCards.map((chart) => (
+                <Grid item xs={12} md={12} key={chart.key}>
+                  {chart.content}
+                </Grid>
+              ))}
             </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardHeader title="Relation: Moyenne vs Étudiants" />
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={320}>
-                    <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" dataKey="average" name="Moyenne" domain={[0, 100]} />
-                      <YAxis type="number" dataKey="count" name="Étudiants" />
-                      <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                      <Legend />
-                      <Scatter name="Cours" data={courseStats} fill={theme.palette.info.main} />
-                    </ScatterChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </Grid>
-          </>
-        )}
-      </Grid>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Actions Section */}
       <Card sx={{ mb: 4 }}>
@@ -320,7 +354,7 @@ export default function Home() {
         <CardContent>
           <Grid container spacing={2}>
             {quickActions.map((item) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={item.title}>
+              <Grid item xs={12} sm={6} md={3} key={item.title}>
                 <QuickActionCard
                   title={item.title}
                   description={item.description}

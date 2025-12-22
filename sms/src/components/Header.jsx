@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Box, IconButton, useTheme as useMuiTheme } from '@mui/material';
+import { Box, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Typography, useTheme as useMuiTheme } from '@mui/material';
+import SettingsIcon from '@mui/icons-material/Settings';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LogoutIcon from '@mui/icons-material/Logout';
+import PersonIcon from '@mui/icons-material/Person';
 import { menuItems } from '../config/menuConfig';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -8,12 +13,27 @@ import './Header.css';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const { isAuthenticated, logout, user } = useAuth();
   const { themeMode, toggleTheme } = useTheme();
   const muiTheme = useMuiTheme();
   const navigate = useNavigate();
 
+  const handleSettingsClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleSettingsClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleThemeToggle = () => {
+    toggleTheme();
+    handleSettingsClose();
+  };
+
   const handleLogout = () => {
+    handleSettingsClose();
     logout();
     navigate('/login');
   };
@@ -79,15 +99,81 @@ export default function Header() {
             ))}
           </ul>
 
-          <div className="auth-bar" style={{ borderTop: `1px solid ${muiTheme.palette.divider}` }}>
+          <div className="auth-bar">
             {isAuthenticated ? (
               <>
-                <span className="user-info" style={{ color: muiTheme.palette.text.primary }}>
-                  {user?.username} {user?.role && `(${(user.role || '').toLowerCase()})`}
-                </span>
-                <button className="logout-btn" onClick={handleLogout}>
-                  🚪 Déconnexion
-                </button>
+                <IconButton
+                  onClick={handleSettingsClick}
+                  sx={{
+                    color: muiTheme.palette.text.primary,
+                    border: `2px solid ${muiTheme.palette.divider}`,
+                    borderRadius: '8px',
+                    padding: '8px',
+                    '&:hover': {
+                      borderColor: muiTheme.palette.primary.main,
+                      backgroundColor: muiTheme.palette.action.hover,
+                    },
+                  }}
+                >
+                  <SettingsIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleSettingsClose}
+                  PaperProps={{
+                    elevation: 3,
+                    sx: {
+                      minWidth: 250,
+                      mt: 1.5,
+                      borderRadius: 2,
+                      overflow: 'visible',
+                      filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.15))',
+                      '&:before': {
+                        content: '""',
+                        display: 'block',
+                        position: 'absolute',
+                        top: 0,
+                        right: 14,
+                        width: 10,
+                        height: 10,
+                        bgcolor: 'background.paper',
+                        transform: 'translateY(-50%) rotate(45deg)',
+                        zIndex: 0,
+                      },
+                    },
+                  }}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                >
+                  <Box sx={{ px: 2, py: 1.5, borderBottom: `1px solid ${muiTheme.palette.divider}` }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <PersonIcon sx={{ color: muiTheme.palette.primary.main, fontSize: 20 }} />
+                      <Typography variant="subtitle1" fontWeight={600}>
+                        {user?.username}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', ml: 3.5 }}>
+                      Rôle: {user?.role || 'Utilisateur'}
+                    </Typography>
+                  </Box>
+                  
+                  <MenuItem onClick={handleThemeToggle} sx={{ py: 1.5, gap: 2 }}>
+                    <ListItemIcon>
+                      {themeMode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+                    </ListItemIcon>
+                    <ListItemText primary={themeMode === 'dark' ? 'Mode clair' : 'Mode sombre'} />
+                  </MenuItem>
+                  
+                  <Divider />
+                  
+                  <MenuItem onClick={handleLogout} sx={{ py: 1.5, gap: 2, color: 'error.main' }}>
+                    <ListItemIcon>
+                      <LogoutIcon fontSize="small" sx={{ color: 'error.main' }} />
+                    </ListItemIcon>
+                    <ListItemText primary="Déconnexion" />
+                  </MenuItem>
+                </Menu>
               </>
             ) : (
               <button
