@@ -28,157 +28,166 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div style={{ padding: 40, textAlign: 'center' }}>
-        <div style={{ fontSize: 24, color: '#666' }}>Chargement des statistiques...</div>
-      </div>
+      <main className="Main page-content" style={{ padding: 32, textAlign: 'center' }}>
+        <div style={{ fontSize: 22, color: '#64748b' }}>Chargement des statistiques...</div>
+      </main>
     );
   }
 
   if (error) {
     return (
-      <div style={{ padding: 40, textAlign: 'center' }}>
-        <div style={{ fontSize: 24, color: '#dc2626' }}>⚠️ Erreur</div>
-        <div style={{ marginTop: 16, color: '#666' }}>{error}</div>
-      </div>
+      <main className="Main page-content" style={{ padding: 32, textAlign: 'center' }}>
+        <div style={{ fontSize: 22, color: '#dc2626', fontWeight: 700 }}>⚠️ Erreur</div>
+        <div style={{ marginTop: 12, color: '#64748b' }}>{error}</div>
+      </main>
     );
   }
 
   const role = (user?.role || '').toLowerCase();
+  const gradesByCourse = stats?.gradesByCourse || [];
+  const maxCount = Math.max(...gradesByCourse.map((g) => g.count || 0), 1);
+  const maxAvg = Math.max(...gradesByCourse.map((g) => g.avgGrade || 0), 20);
 
   return (
-    <div style={{ padding: 40 }}>
-      <header style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 32, fontWeight: 'bold', marginBottom: 8 }}>
-          📊 Tableau de bord
-        </h1>
-        <p style={{ color: '#666', fontSize: 16 }}>
-          {role === 'admin' && 'Vision globale - Administrateur'}
-          {role === 'scolarite' && 'Vision scolarité'}
-          {role === 'student' && 'Mon dossier étudiant'}
-          {!['admin', 'scolarite', 'student'].includes(role) && 'Rôle inconnu'}
-        </p>
-      </header>
+    <main className="dashboard-shell">
+      <div className="dash-hero">
+        <div className="dash-hero-card">
+          <p className="hero-kicker">Tableau de bord</p>
+          <h1>📊 Pilotage des données</h1>
+          <p>
+            {role === 'admin' && 'Vision globale - Administrateur'}
+            {role === 'scolarite' && 'Vision scolarité'}
+            {role === 'student' && 'Mon dossier étudiant'}
+            {!['admin', 'scolarite', 'student'].includes(role) && 'Rôle inconnu'}
+          </p>
+          <div className="pill-row">
+            <span className="pill">Rôle : {role || 'inconnu'}</span>
+            <span className="pill">JWT & ACL</span>
+            <span className="pill">Données live</span>
+          </div>
+        </div>
 
-      {/* Admin & Teacher: global stats */}
-      {(role === 'admin' || role === 'scolarite') && (
-        <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24, marginBottom: 32 }}>
+        <div className="dash-summary">
+          <div className="metric-grid">
             {role === 'admin' && (
-              <div style={{ padding: 24, backgroundColor: '#f59e0b', color: 'white', borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                <div style={{ fontSize: 14, marginBottom: 8, opacity: 0.9 }}>Utilisateurs</div>
-                <div style={{ fontSize: 36, fontWeight: 'bold' }}>{stats?.totalUsers || 0}</div>
+              <div className="metric-card" style={{ borderLeft: '5px solid #f59e0b' }}>
+                <div className="metric-label">Utilisateurs</div>
+                <div className="metric-value" style={{ color: '#f59e0b' }}>{stats?.totalUsers || 0}</div>
+                <div className="stat-hint">Accès et rôles</div>
               </div>
             )}
-            <div style={{ padding: 24, backgroundColor: '#3b82f6', color: 'white', borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-              <div style={{ fontSize: 14, marginBottom: 8, opacity: 0.9 }}>Étudiants</div>
-              <div style={{ fontSize: 36, fontWeight: 'bold' }}>{stats?.totalStudents || 0}</div>
+            <div className="metric-card" style={{ borderLeft: '5px solid #2563eb' }}>
+              <div className="metric-label">Étudiants</div>
+              <div className="metric-value" style={{ color: '#2563eb' }}>{stats?.totalStudents || 0}</div>
+              <div className="stat-hint">Dossiers actifs</div>
             </div>
-            <div style={{ padding: 24, backgroundColor: '#10b981', color: 'white', borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-              <div style={{ fontSize: 14, marginBottom: 8, opacity: 0.9 }}>Cours</div>
-              <div style={{ fontSize: 36, fontWeight: 'bold' }}>{stats?.totalCourses || 0}</div>
+            <div className="metric-card" style={{ borderLeft: '5px solid #10b981' }}>
+              <div className="metric-label">Cours</div>
+              <div className="metric-value" style={{ color: '#10b981' }}>{stats?.totalCourses || 0}</div>
+              <div className="stat-hint">Catalogue</div>
             </div>
-            <div style={{ padding: 24, backgroundColor: '#8b5cf6', color: 'white', borderRadius: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-              <div style={{ fontSize: 14, marginBottom: 8, opacity: 0.9 }}>Notes</div>
-              <div style={{ fontSize: 36, fontWeight: 'bold' }}>{stats?.totalGrades || 0}</div>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16, marginBottom: 32 }}>
-            <div style={{ padding: 20, backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: 12 }}>
-              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Moyenne générale</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#3b82f6' }}>{stats?.avgGrade || 0}</div>
-            </div>
-            <div style={{ padding: 20, backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: 12 }}>
-              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Note maximale</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#10b981' }}>{stats?.maxGrade || 0}</div>
-            </div>
-            <div style={{ padding: 20, backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: 12 }}>
-              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Note minimale</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#ef4444' }}>{stats?.minGrade || 0}</div>
+            <div className="metric-card" style={{ borderLeft: '5px solid #8b5cf6' }}>
+              <div className="metric-label">Notes</div>
+              <div className="metric-value" style={{ color: '#8b5cf6' }}>{stats?.totalGrades || 0}</div>
+              <div className="stat-hint">Évaluations</div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div style={{ backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: 12, padding: 24 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>📚 Statistiques par cours</h2>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                  <th style={{ textAlign: 'left', padding: 12 }}>Cours</th>
-                  <th style={{ textAlign: 'center', padding: 12 }}>Nombre de notes</th>
-                  <th style={{ textAlign: 'center', padding: 12 }}>Moyenne</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats?.gradesByCourse?.map((item, idx) => (
-                  <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                    <td style={{ padding: 12 }}>{item.courseName}</td>
-                    <td style={{ padding: 12, textAlign: 'center' }}>{item.count}</td>
-                    <td style={{ padding: 12, textAlign: 'center', fontWeight: 'bold', color: '#3b82f6' }}>
-                      {item.avgGrade}
-                    </td>
-                  </tr>
+      {(role === 'admin' || role === 'scolarite') && (
+        <>
+          <section className="metric-grid">
+            <div className="metric-card">
+              <div className="metric-label">Moyenne générale</div>
+              <div className="metric-value" style={{ color: '#2563eb' }}>{stats?.avgGrade || 0}</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Note maximale</div>
+              <div className="metric-value" style={{ color: '#10b981' }}>{stats?.maxGrade || 0}</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Note minimale</div>
+              <div className="metric-value" style={{ color: '#ef4444' }}>{stats?.minGrade || 0}</div>
+            </div>
+          </section>
+
+          <section className="chart-card">
+            <h2 style={{ margin: 0, marginBottom: 10 }}>📚 Statistiques par cours</h2>
+            {gradesByCourse.length === 0 ? (
+              <p style={{ color: '#6b7280' }}>Aucune note encore enregistrée.</p>
+            ) : (
+              <div className="chart-row">
+                {gradesByCourse.map((item, idx) => (
+                  <div key={idx}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3>{item.courseName}</h3>
+                      <span style={{ color: '#6b7280' }}>{item.count} notes · moy {item.avgGrade}</span>
+                    </div>
+                    <div className="chart-bar-track">
+                      <div className="chart-bar-fill" style={{ '--w': `${Math.max(8, (item.count / maxCount) * 100)}%` }} />
+                      <div
+                        className="chart-bar-marker"
+                        style={{ left: `${Math.max(0, (item.avgGrade / maxAvg) * 100)}%` }}
+                        title={`Moyenne ${item.avgGrade}`}
+                      />
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            )}
+          </section>
         </>
       )}
 
-      {/* Student: personal stats */}
       {role === 'student' && (
         <>
-          <div style={{ backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: 12, padding: 24, marginBottom: 24 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 8 }}>👤 Mon profil</h2>
-            <p style={{ color: '#666', marginBottom: 4 }}>
-              <strong>Nom :</strong> {stats?.studentName || 'N/A'}
-            </p>
-            <p style={{ color: '#666' }}>
-              <strong>Email :</strong> {stats?.studentEmail || 'N/A'}
-            </p>
-          </div>
+          <section className="about-card" style={{ borderLeft: '5px solid #2563eb' }}>
+            <h2 style={{ margin: 0, marginBottom: 6 }}>👤 Mon profil</h2>
+            <p style={{ margin: 0, color: '#475569' }}><strong>Nom :</strong> {stats?.studentName || 'N/A'}</p>
+            <p style={{ margin: 0, color: '#475569' }}><strong>Email :</strong> {stats?.studentEmail || 'N/A'}</p>
+          </section>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16, marginBottom: 32 }}>
-            <div style={{ padding: 20, backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: 12 }}>
-              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Nombre de notes</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#8b5cf6' }}>{stats?.totalGrades || 0}</div>
+          <section className="metric-grid">
+            <div className="metric-card">
+              <div className="metric-label">Nombre de notes</div>
+              <div className="metric-value" style={{ color: '#8b5cf6' }}>{stats?.totalGrades || 0}</div>
             </div>
-            <div style={{ padding: 20, backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: 12 }}>
-              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Ma moyenne</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#3b82f6' }}>{stats?.avgGrade || 0}</div>
+            <div className="metric-card">
+              <div className="metric-label">Ma moyenne</div>
+              <div className="metric-value" style={{ color: '#2563eb' }}>{stats?.avgGrade || 0}</div>
             </div>
-            <div style={{ padding: 20, backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: 12 }}>
-              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Meilleure note</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#10b981' }}>{stats?.maxGrade || 0}</div>
+            <div className="metric-card">
+              <div className="metric-label">Meilleure note</div>
+              <div className="metric-value" style={{ color: '#10b981' }}>{stats?.maxGrade || 0}</div>
             </div>
-            <div style={{ padding: 20, backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: 12 }}>
-              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>Note la plus basse</div>
-              <div style={{ fontSize: 28, fontWeight: 'bold', color: '#ef4444' }}>{stats?.minGrade || 0}</div>
+            <div className="metric-card">
+              <div className="metric-label">Note la plus basse</div>
+              <div className="metric-value" style={{ color: '#ef4444' }}>{stats?.minGrade || 0}</div>
             </div>
-          </div>
+          </section>
 
-          <div style={{ backgroundColor: '#fff', border: '2px solid #e5e7eb', borderRadius: 12, padding: 24 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>📝 Mes notes par cours</h2>
+          <section className="chart-card">
+            <h2 style={{ margin: 0, marginBottom: 12 }}>📝 Mes notes par cours</h2>
             {stats?.gradesByCourse?.length === 0 ? (
-              <p style={{ color: '#666', textAlign: 'center', padding: 20 }}>Aucune note enregistrée</p>
+              <p style={{ color: '#666', textAlign: 'center', padding: 12 }}>Aucune note enregistrée</p>
             ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <table className="data-table-soft">
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                    <th style={{ textAlign: 'left', padding: 12 }}>Cours</th>
-                    <th style={{ textAlign: 'center', padding: 12 }}>Code</th>
-                    <th style={{ textAlign: 'center', padding: 12 }}>Note</th>
-                    <th style={{ textAlign: 'center', padding: 12 }}>Date</th>
+                  <tr>
+                    <th>Cours</th>
+                    <th>Code</th>
+                    <th>Note</th>
+                    <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {stats?.gradesByCourse?.map((item, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                      <td style={{ padding: 12 }}>{item.courseName}</td>
-                      <td style={{ padding: 12, textAlign: 'center', color: '#666' }}>{item.courseCode}</td>
-                      <td style={{ padding: 12, textAlign: 'center', fontWeight: 'bold', color: '#3b82f6' }}>
-                        {item.grade}
-                      </td>
-                      <td style={{ padding: 12, textAlign: 'center', color: '#666' }}>
+                    <tr key={idx}>
+                      <td>{item.courseName}</td>
+                      <td style={{ textAlign: 'center', color: '#6b7280' }}>{item.courseCode}</td>
+                      <td style={{ textAlign: 'center', fontWeight: '700', color: '#2563eb' }}>{item.grade}</td>
+                      <td style={{ textAlign: 'center', color: '#6b7280' }}>
                         {item.date ? new Date(item.date).toLocaleDateString('fr-FR') : 'N/A'}
                       </td>
                     </tr>
@@ -186,10 +195,10 @@ function Dashboard() {
                 </tbody>
               </table>
             )}
-          </div>
+          </section>
         </>
       )}
-    </div>
+    </main>
   );
 }
 

@@ -11,7 +11,7 @@ function App() {
 
   return (
     <div className="app">
-      {isAuthenticated && <Header />}
+      <Header />
       <ContentRouter /> 
       {isAuthenticated && <Footer />}
     </div>

@@ -7,13 +7,23 @@ export const useGrades = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const transformGrade = (grade) => ({
+    id: grade._id,
+    grade: grade.grade,
+    courseId: grade.course?._id || grade.course,
+    courseName: grade.course?.name || 'Unknown',
+    studentId: grade.student?._id || grade.student,
+    studentFirstName: grade.student?.firstName || '',
+    studentLastName: grade.student?.lastName || '',
+    date: grade.date || null
+  });
+
   useEffect(() => {
     const fetchGrades = async () => {
       try {
         setLoading(true);
         const grades = await apiClient.getGrades();
         
-        // Validate that grades is an array
         if (!Array.isArray(grades)) {
           console.error('Grades response is not an array:', grades);
           setData([]);
@@ -21,19 +31,7 @@ export const useGrades = () => {
           return;
         }
         
-        // Transform data to match expected format
-        const transformedGrades = grades.map(grade => ({
-          id: grade._id,
-          grade: grade.grade,
-          course: grade.course?.name || 'Unknown',
-          student: {
-            firstname: grade.student?.firstName || '',
-            lastname: grade.student?.lastName || ''
-          },
-          date: grade.date ? new Date(grade.date).toLocaleDateString('en-US') : ''
-        }));
-        
-        setData(transformedGrades);
+        setData(grades.map(transformGrade));
         setError(null);
       } catch (err) {
         console.error('Error fetching grades:', err);
@@ -47,7 +45,26 @@ export const useGrades = () => {
     fetchGrades();
   }, []);
 
-  return { data, loading, error };
+  const createGrade = async (gradeData) => {
+    const created = await apiClient.createGrade(gradeData);
+    const mapped = transformGrade(created);
+    setData((prev) => [...prev, mapped]);
+    return mapped;
+  };
+
+  const updateGrade = async (id, gradeData) => {
+    const updated = await apiClient.updateGrade(id, gradeData);
+    const mapped = transformGrade(updated);
+    setData((prev) => prev.map((g) => (g.id === id ? mapped : g)));
+    return mapped;
+  };
+
+  const deleteGrade = async (id) => {
+    await apiClient.deleteGrade(id);
+    setData((prev) => prev.filter((g) => g.id !== id));
+  };
+
+  return { data, loading, error, createGrade, updateGrade, deleteGrade };
 };
 
 // Hook for Students
@@ -114,7 +131,6 @@ export const useCourses = () => {
         setLoading(true);
         const courses = await apiClient.getCourses();
         
-        // Validate that courses is an array
         if (!Array.isArray(courses)) {
           console.error('Courses response is not an array:', courses);
           setData([]);
@@ -122,7 +138,6 @@ export const useCourses = () => {
           return;
         }
         
-        // Transform data to match expected format
         const transformedCourses = courses.map(course => ({
           id: course._id,
           name: course.name,
@@ -143,7 +158,26 @@ export const useCourses = () => {
     fetchCourses();
   }, []);
 
-  return { data, loading, error };
+  const createCourse = async (courseData) => {
+    const created = await apiClient.createCourse(courseData);
+    const mapped = { id: created._id, name: created.name, code: created.code };
+    setData((prev) => [...prev, mapped]);
+    return mapped;
+  };
+
+  const updateCourse = async (id, courseData) => {
+    const updated = await apiClient.updateCourse(id, courseData);
+    const mapped = { id: updated._id, name: updated.name, code: updated.code };
+    setData((prev) => prev.map((c) => (c.id === id ? mapped : c)));
+    return mapped;
+  };
+
+  const deleteCourse = async (id) => {
+    await apiClient.deleteCourse(id);
+    setData((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  return { data, loading, error, createCourse, updateCourse, deleteCourse };
 };
 
 // Hook for Users (can be disabled for roles sans droits)

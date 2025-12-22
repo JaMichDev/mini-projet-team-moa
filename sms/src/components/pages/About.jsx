@@ -6,164 +6,107 @@ export default function About() {
   const { totalEtudiants, totalMatieres, totalNotes, global, parMatiere } = stats;
 
   return (
-    <main className="Main page-content apropos-page">
-      <div className="apropos-header">
-        <h1>ℹ️ À propos du Projet</h1>
-        <p className="apropos-description">{description}</p>
-      </div>
+    <main className="Main about-shell">
+      <section className="about-hero">
+        <p className="hero-kicker">MBDS — Gestion académique</p>
+        <h1>ℹ️ À propos du projet</h1>
+        <p>{description}</p>
+        <div className="pill-row" style={{ marginTop: 12 }}>
+          <span className="pill">JWT + Rôles</span>
+          <span className="pill">React · Node · MongoDB</span>
+          <span className="pill">Sécurisé par middleware</span>
+        </div>
+      </section>
 
-      <div className="apropos-container">
-        
-        {/* Title Section */}
-        <section className="apropos-section">
-          <h2>🎓 {title}</h2>
-          <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#555' }}>
-            La Faculté des Sciences de l'Université d'État d'Haïti propose depuis 1999 un Master
-            (MBDS - Bases de Données et Intégration de Systèmes) en partenariat avec l'Université de Nice Sophia Antipolis.
+      <section className="about-grid">
+        <article className="about-card" style={{ borderLeft: '5px solid #2563eb' }}>
+          <h2 style={{ margin: 0, marginBottom: 8 }}>🎓 {title}</h2>
+          <p style={{ margin: 0, color: '#475569', lineHeight: 1.6 }}>
+            La Faculté des Sciences de l'Université d'État d'Haïti propose depuis 1999 un Master MBDS en partenariat
+            avec l'Université de Nice Sophia Antipolis. Cette plateforme centralise étudiants, cours et notes avec
+            contrôle d'accès (Admin, Scolarité, Étudiant).
           </p>
-          <p style={{ fontSize: '16px', lineHeight: '1.8', color: '#555', marginTop: '16px' }}>
-            Cette plateforme web permet de gérer efficacement les étudiants, cours et notes avec un système
-            d'authentification sécurisé par JWT et contrôle d'accès basé sur les rôles (Admin, Scolarité, Étudiant).
-          </p>
-        </section>
+        </article>
 
-        {/* Technology Stack Section */}
-        <section className="apropos-section">
-          <h2>🚀 Technologies utilisées</h2>
-          <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
-            <div className="stat-card" style={{ textAlign: 'center', padding: '20px' }}>
-              <div className="stat-icon" style={{ fontSize: '2.5rem' }}>⚛️</div>
-              <div className="stat-content">
-                <p className="stat-label">React + Vite</p>
-              </div>
-            </div>
-            <div className="stat-card" style={{ textAlign: 'center', padding: '20px' }}>
-              <div className="stat-icon" style={{ fontSize: '2.5rem' }}>🟢</div>
-              <div className="stat-content">
-                <p className="stat-label">Node.js + Express</p>
-              </div>
-            </div>
-            <div className="stat-card" style={{ textAlign: 'center', padding: '20px' }}>
-              <div className="stat-icon" style={{ fontSize: '2.5rem' }}>🍃</div>
-              <div className="stat-content">
-                <p className="stat-label">MongoDB</p>
-              </div>
-            </div>
-            <div className="stat-card" style={{ textAlign: 'center', padding: '20px' }}>
-              <div className="stat-icon" style={{ fontSize: '2.5rem' }}>🔐</div>
-              <div className="stat-content">
-                <p className="stat-label">JWT Auth</p>
-              </div>
-            </div>
+        <article className="about-card" style={{ borderLeft: '5px solid #7c3aed' }}>
+          <h2 style={{ margin: 0, marginBottom: 8 }}>🚀 Technologies</h2>
+          <div className="chip-row">
+            <span className="chip-soft">⚛️ React + Vite</span>
+            <span className="chip-soft">🟢 Node + Express</span>
+            <span className="chip-soft">🍃 MongoDB</span>
+            <span className="chip-soft">🔐 JWT</span>
           </div>
-        </section>
+        </article>
+      </section>
 
-        {/* Global Statistics Section */}
-        <section className="apropos-section">
-          <h2>📊 Statistiques globales</h2>
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon">👥</div>
-              <div className="stat-content">
-                <p className="stat-label">Étudiants</p>
-                <p className="stat-value">{totalEtudiants}</p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">📚</div>
-              <div className="stat-content">
-                <p className="stat-label">Cours</p>
-                <p className="stat-value">{totalMatieres}</p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">📝</div>
-              <div className="stat-content">
-                <p className="stat-label">Notes enregistrées</p>
-                <p className="stat-value">{totalNotes}</p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">⭐</div>
-              <div className="stat-content">
-                <p className="stat-label">Moyenne générale</p>
-                <p className="stat-value">{global.moyenne}/100</p>
-              </div>
-            </div>
+      <section className="stat-stack">
+        <div className="about-card">
+          <div className="metric-label">Étudiants</div>
+          <div className="metric-value" style={{ color: '#2563eb' }}>{totalEtudiants}</div>
+        </div>
+        <div className="about-card">
+          <div className="metric-label">Cours</div>
+          <div className="metric-value" style={{ color: '#0ea5e9' }}>{totalMatieres}</div>
+        </div>
+        <div className="about-card">
+          <div className="metric-label">Notes</div>
+          <div className="metric-value" style={{ color: '#8b5cf6' }}>{totalNotes}</div>
+        </div>
+        <div className="about-card">
+          <div className="metric-label">Moyenne générale</div>
+          <div className="metric-value" style={{ color: '#10b981' }}>{global.moyenne}/100</div>
+        </div>
+      </section>
+
+      <section className="about-grid">
+        <article className="about-card">
+          <h2 style={{ margin: 0, marginBottom: 8 }}>📈 Statistiques détaillées</h2>
+          <div className="stat-stack" style={{ gap: 10 }}>
+            <div className="metric-card"><div className="metric-label">Moyenne</div><div className="metric-value">{global.moyenne}</div></div>
+            <div className="metric-card"><div className="metric-label">Maximum</div><div className="metric-value">{global.max}</div></div>
+            <div className="metric-card"><div className="metric-label">Minimum</div><div className="metric-value">{global.min}</div></div>
+            <div className="metric-card"><div className="metric-label">Médiane</div><div className="metric-value">{global.median}</div></div>
+            <div className="metric-card"><div className="metric-label">Écart-type</div><div className="metric-value">{global.standardDeviation}</div></div>
           </div>
-        </section>
+        </article>
 
-        {/* Detailed Statistics Section */}
-        <section className="apropos-section">
-          <h2>📈 Statistiques détaillées</h2>
-          <div className="stats-detailed">
-            <div className="stat-item">
-              <span className="stat-icon-text">📊</span>
-              <span className="stat-label">Moyenne</span>
-              <span className="stat-value">{global.moyenne}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-icon-text">⬆️</span>
-              <span className="stat-label">Maximum</span>
-              <span className="stat-value">{global.max}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-icon-text">⬇️</span>
-              <span className="stat-label">Minimum</span>
-              <span className="stat-value">{global.min}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-icon-text">📍</span>
-              <span className="stat-label">Médiane</span>
-              <span className="stat-value">{global.median}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-icon-text">📉</span>
-              <span className="stat-label">Écart-type</span>
-              <span className="stat-value">{global.standardDeviation}</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Performance by Course Section */}
-        <section className="apropos-section">
-          <h2>📚 Performance par cours</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16 }}>
+        <article className="about-card">
+          <h2 style={{ margin: 0, marginBottom: 8 }}>📚 Performance par cours</h2>
+          <table className="table-soft">
             <thead>
               <tr>
-                <th style={{ textAlign: 'left', padding: 8, borderBottom: '1px solid #e6eef8' }}>Cours</th>
-                <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e6eef8' }}>Records</th>
-                <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e6eef8' }}>Average</th>
-                <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e6eef8' }}>Max</th>
-                <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e6eef8' }}>Min</th>
-                <th style={{ textAlign: 'right', padding: 8, borderBottom: '1px solid #e6eef8' }}>Median</th>
+                <th>Cours</th>
+                <th style={{ textAlign: 'right' }}>Records</th>
+                <th style={{ textAlign: 'right' }}>Average</th>
+                <th style={{ textAlign: 'right' }}>Max</th>
+                <th style={{ textAlign: 'right' }}>Min</th>
+                <th style={{ textAlign: 'right' }}>Median</th>
               </tr>
             </thead>
             <tbody>
               {Object.entries(parMatiere).map(([course, { count, moyenne, max, min, median }]) => (
                 <tr key={course}>
-                  <td style={{ padding: 8, borderBottom: '1px solid #f1f5f9' }}>{course}</td>
-                  <td style={{ padding: 8, textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{count}</td>
-                  <td style={{ padding: 8, textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{moyenne}</td>
-                  <td style={{ padding: 8, textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{max}</td>
-                  <td style={{ padding: 8, textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{min}</td>
-                  <td style={{ padding: 8, textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{median}</td>
+                  <td>{course}</td>
+                  <td style={{ textAlign: 'right' }}>{count}</td>
+                  <td style={{ textAlign: 'right' }}>{moyenne}</td>
+                  <td style={{ textAlign: 'right' }}>{max}</td>
+                  <td style={{ textAlign: 'right' }}>{min}</td>
+                  <td style={{ textAlign: 'right' }}>{median}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </section>
+        </article>
+      </section>
 
-        {/* Contact Section */}
-        <section className="apropos-section contact-section">
-          <h2>📞 Contact</h2>
-          <div className="contact-info">
-            <p><strong>Email:</strong> <a href={`mailto:${email}`}>{email}</a></p>
-            <p><strong>Phone:</strong> <a href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a></p>
-            <p><strong>Developer:</strong> <a href={`prog:${programmeur}`}>{programmeur}</a></p>
-          </div>
-        </section>
-      </div>
+      <section className="about-card">
+        <h2 style={{ margin: 0, marginBottom: 10 }}>📞 Contact</h2>
+        <div className="contact-grid">
+          <div><strong>Email:</strong> <a href={`mailto:${email}`}>{email}</a></div>
+          <div><strong>Téléphone:</strong> <a href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a></div>
+          <div><strong>Développeur:</strong> {programmeur}</div>
+        </div>
+      </section>
     </main>
   );
 }

@@ -85,6 +85,54 @@ const apiClient = {
     return res.json();
   },
 
+  // Courses CRUD
+  async createCourse(data) {
+    const res = await fetch(`${API_BASE_URL}/courses`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader()
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to create course');
+    }
+    return res.json();
+  },
+
+  async updateCourse(id, data) {
+    const res = await fetch(`${API_BASE_URL}/courses/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader()
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to update course');
+    }
+    return res.json();
+  },
+
+  async deleteCourse(id) {
+    const res = await fetch(`${API_BASE_URL}/courses/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader()
+      }
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to delete course');
+    }
+    return res.json();
+  },
+
   // Add CRUD operations for Grades
   async createGrade(data) {
     const res = await fetch(`${API_BASE_URL}/grades`, {
@@ -95,8 +143,10 @@ const apiClient = {
       },
       body: JSON.stringify(data)
     });
-    if (!res.ok) 
-      throw new Error('Failed to create grade');
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to create grade');
+    }
     return res.json();
   },
 
@@ -109,8 +159,10 @@ const apiClient = {
       },
       body: JSON.stringify(data)
     });
-    if (!res.ok) 
-      throw new Error('Failed to update grade');
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to update grade');
+    }
     return res.json();
   },
 
@@ -122,8 +174,10 @@ const apiClient = {
         ...getAuthHeader()
       }
     });
-    if (!res.ok) 
-      throw new Error('Failed to delete grade');
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || 'Failed to delete grade');
+    }
     return res.json();
   },
 

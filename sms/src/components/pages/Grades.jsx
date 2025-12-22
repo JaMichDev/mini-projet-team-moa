@@ -1,22 +1,34 @@
-import { useState, useMemo } from 'react';
-import { useGrades } from '../../hooks/useApi';
+import { useMemo, useState } from 'react';
+import { useCourses, useGrades, useStudents } from '../../hooks/useApi';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Grades() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState({ studentId: '', courseId: '', grade: '', date: '' });
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const { user } = useAuth();
 
-  const { data: grades = [], loading, error } = useGrades();
+  const { data: grades = [], loading, error, createGrade, updateGrade, deleteGrade } = useGrades();
+  const { data: courses = [] } = useCourses();
+  const { data: students = [] } = useStudents();
+
+  const role = (user?.role || '').toLowerCase();
+  const canEdit = role === 'admin' || role === 'scolarite';
 
   // Filter grades based on search
   const filteredGrades = useMemo(() => {
     if (!searchTerm) return grades;
     const term = searchTerm.toLowerCase();
     return grades.filter(g => 
-      (g.course || '').toLowerCase().includes(term) ||
-      (g.student?.firstname || '').toLowerCase().includes(term) ||
-      (g.student?.lastname || '').toLowerCase().includes(term) ||
+      (g.courseName || '').toLowerCase().includes(term) ||
+      (`${g.studentFirstName || ''} ${g.studentLastName || ''}`).toLowerCase().includes(term) ||
       (g.id || '').toLowerCase().includes(term) ||
       (g.grade?.toString() || '').includes(term)
     );
@@ -30,11 +42,14 @@ export default function Grades() {
       let aValue, bValue;
       
       if (sortConfig.key === 'student') {
-        aValue = `${a.student?.lastname || ''} ${a.student?.firstname || ''}`.toLowerCase();
-        bValue = `${b.student?.lastname || ''} ${b.student?.firstname || ''}`.toLowerCase();
+        aValue = `${a.studentLastName || ''} ${a.studentFirstName || ''}`.toLowerCase();
+        bValue = `${b.studentLastName || ''} ${b.studentFirstName || ''}`.toLowerCase();
       } else if (sortConfig.key === 'grade') {
         aValue = a.grade || 0;
         bValue = b.grade || 0;
+      } else if (sortConfig.key === 'date') {
+        aValue = a.date ? new Date(a.date).getTime() : 0;
+        bValue = b.date ? new Date(b.date).getTime() : 0;
       } else {
         aValue = (a[sortConfig.key] || '').toString().toLowerCase();
         bValue = (b[sortConfig.key] || '').toString().toLowerCase();
@@ -70,110 +85,281 @@ export default function Grades() {
   const next = () => goTo(page + 1);
   const prev = () => goTo(page - 1);
 
+  const resetForm = () => {
+    setFormData({ studentId: '', courseId: '', grade: '', date: '' });
+    setEditingId(null);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEdit = (grade) => {
+    setEditingId(grade.id);
+    setFormData({
+      studentId: grade.studentId || '',
+      courseId: grade.courseId || '',
+      grade: grade.grade ?? '',
+      date: grade.date ? grade.date.split('T')[0] : ''
+    });
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!canEdit) return;
+    setSubmitting(true);
+    setMessage('');
+
+    try {
+      const payload = {
+        student: formData.studentId,
+        course: formData.courseId,
+        grade: Number(formData.grade),
+        date: formData.date || undefined
+      };
+
+      if (!payload.student || !payload.course || Number.isNaN(payload.grade)) {
+        setMessage('Student, course and grade are required');
+        setMessageType('error');
+        setSubmitting(false);
+        return;
+      }
+
+      if (editingId) {
+        await updateGrade(editingId, payload);
+        setMessage('Grade updated');
+      } else {
+        await createGrade(payload);
+        setMessage('Grade created');
+      }
+      setMessageType('success');
+      resetForm();
+      setShowForm(false);
+    } catch (err) {
+      setMessage(err.message || 'Operation failed');
+      setMessageType('error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!canEdit) return;
+    if (!window.confirm('Delete this grade?')) return;
+    try {
+      await deleteGrade(id);
+      setMessage('Grade deleted');
+      setMessageType('success');
+    } catch (err) {
+      setMessage(err.message || 'Delete failed');
+      setMessageType('error');
+    }
+  };
+
   return (
-    <main className="Main page-content">
-      <header style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'center',marginBottom:20}}>
-        <div>
-          <h1>📊 Grades</h1>
-          <p>{total} grades total</p>
-        </div>
-        
-        <div style={{display:'flex',gap:12,alignItems:'center'}}>
-          <input
-            type="text"
-            placeholder="Search by student, course, or grade..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setPage(1);
-            }}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: 4,
-              minWidth: 300
-            }}
-          />
-          
-          <select 
-            value={pageSize} 
-            onChange={(e) => {
-              setPageSize(Number(e.target.value));
-              setPage(1);
-            }}
-            style={{padding:'8px 12px',border:'1px solid #ddd',borderRadius:4}}
-          >
-            <option value={10}>10 per page</option>
-            <option value={25}>25 per page</option>
-            <option value={50}>50 per page</option>
-            <option value={0}>Show all</option>
-          </select>
-        </div>
-      </header>
+    <main className="Main page-shell">
+      <section className="page-card">
+        <header className="page-header">
+          <div>
+            <h1>📊 Grades</h1>
+            <p style={{margin:0,color:'#475569'}}>{total} grades total</p>
+          </div>
+          <div className="toolbar">
+            <input
+              className="input"
+              type="text"
+              placeholder="Search by student, course, or grade..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+            />
+            
+            <select 
+              className="select"
+              value={pageSize} 
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+            >
+              <option value={10}>10 per page</option>
+              <option value={25}>25 per page</option>
+              <option value={50}>50 per page</option>
+              <option value={0}>Show all</option>
+            </select>
 
-      <table style={{width:'100%',borderCollapse:'collapse'}}>
-        <thead>
-          <tr style={{borderBottom:'2px solid #333'}}>
-            <th 
-              style={{textAlign:'left',padding:12,cursor:'pointer',userSelect:'none'}}
-              onClick={() => handleSort('id')}
-            >
-              ID {sortConfig.key === 'id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-            </th>
-            <th 
-              style={{textAlign:'left',padding:12,cursor:'pointer',userSelect:'none'}}
-              onClick={() => handleSort('student')}
-            >
-              Student {sortConfig.key === 'student' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-            </th>
-            <th 
-              style={{textAlign:'left',padding:12,cursor:'pointer',userSelect:'none'}}
-              onClick={() => handleSort('course')}
-            >
-              Course {sortConfig.key === 'course' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-            </th>
-            <th 
-              style={{textAlign:'right',padding:12,cursor:'pointer',userSelect:'none'}}
-              onClick={() => handleSort('grade')}
-            >
-              Grade {sortConfig.key === 'grade' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-            </th>
-            <th 
-              style={{textAlign:'left',padding:12,cursor:'pointer',userSelect:'none'}}
-              onClick={() => handleSort('date')}
-            >
-              Date {sortConfig.key === 'date' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {visible.map((grade) => (
-            <tr key={grade.id} style={{borderBottom:'1px solid #eee'}}>
-              <td style={{padding:12}}>{grade.id}</td>
-              <td style={{padding:12}}>
-                {grade.student?.firstname} {grade.student?.lastname}
-              </td>
-              <td style={{padding:12}}>{grade.course}</td>
-              <td style={{padding:12,textAlign:'right',fontWeight:'bold'}}>
-                {grade.grade}
-              </td>
-              <td style={{padding:12}}>{grade.date}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            {canEdit && (
+              <button
+                className="btn-primary-solid"
+                onClick={() => {
+                  resetForm();
+                  setShowForm((v) => !v);
+                }}
+              >
+                {showForm ? '✕ Close' : '➕ Add'}
+              </button>
+            )}
+          </div>
+        </header>
 
-      {totalPages > 1 && (
-        <footer style={{display:'flex',justifyContent:'center',alignItems:'center',gap:12,marginTop:20}}>
-          <button onClick={prev} disabled={page === 1} style={{padding:'8px 16px',cursor:page===1?'not-allowed':'pointer'}}>
-            ← Previous
-          </button>
-          <span>Page {page} of {totalPages}</span>
-          <button onClick={next} disabled={page === totalPages} style={{padding:'8px 16px',cursor:page===totalPages?'not-allowed':'pointer'}}>
-            Next →
-          </button>
-        </footer>
-      )}
+        {message && (
+          <div className={`banner ${messageType === 'error' ? 'error' : 'success'}`}>
+            {message}
+          </div>
+        )}
+
+        {showForm && canEdit && (
+          <div className="page-card" style={{marginBottom: 16}}>
+            <h2 style={{margin: 0, marginBottom: 10}}>{editingId ? 'Edit grade' : 'Create grade'}</h2>
+            <form onSubmit={handleSubmit} className="form-grid">
+              <label>
+                <span>Student *</span>
+                <select
+                  className="select"
+                  name="studentId"
+                  value={formData.studentId}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select student</option>
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.firstname} {s.lastname}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>Course *</span>
+                <select
+                  className="select"
+                  name="courseId"
+                  value={formData.courseId}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select course</option>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.code} — {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>Grade *</span>
+                <input
+                  className="input"
+                  type="number"
+                  step="0.01"
+                  name="grade"
+                  value={formData.grade}
+                  onChange={handleChange}
+                  required
+                  placeholder="Ex: 15"
+                />
+              </label>
+
+              <label>
+                <span>Date</span>
+                <input
+                  className="input"
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleChange}
+                />
+              </label>
+
+              <div className="actions" style={{marginTop: 6}}>
+                <button
+                  type="submit"
+                  className="btn-primary-solid"
+                  disabled={submitting}
+                  style={{opacity: submitting ? 0.7 : 1}}
+                >
+                  {submitting ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                </button>
+                {editingId && (
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => { resetForm(); setShowForm(false); }}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        )}
+
+        <div className="table-card page-card" style={{paddingTop:0}}>
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th onClick={() => handleSort('id')}>
+                    ID {sortConfig.key === 'id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('student')}>
+                    Student {sortConfig.key === 'student' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('courseName')}>
+                    Course {sortConfig.key === 'courseName' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('grade')}>
+                    Grade {sortConfig.key === 'grade' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('date')}>
+                    Date {sortConfig.key === 'date' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  {canEdit && <th style={{textAlign:'center'}}>Actions</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((grade) => (
+                  <tr key={grade.id}>
+                    <td>{grade.id}</td>
+                    <td>
+                      <span className="chip">{grade.studentFirstName} {grade.studentLastName}</span>
+                    </td>
+                    <td>{grade.courseName}</td>
+                    <td style={{fontWeight:'700'}}>{grade.grade}</td>
+                    <td>{grade.date ? new Date(grade.date).toLocaleDateString('fr-FR') : '—'}</td>
+                    {canEdit && (
+                      <td>
+                        <div className="actions" style={{justifyContent:'center'}}>
+                          <button className="btn-ghost" onClick={() => handleEdit(grade)}>✏️ Edit</button>
+                          <button className="btn-ghost danger" onClick={() => handleDelete(grade.id)}>🗑 Delete</button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {totalPages > 1 && (
+          <footer className="toolbar" style={{justifyContent:'center'}}>
+            <button onClick={prev} className="btn-ghost" disabled={page === 1}>
+              ← Previous
+            </button>
+            <span style={{fontWeight:600}}>Page {page} of {totalPages}</span>
+            <button onClick={next} className="btn-ghost" disabled={page === totalPages}>
+              Next →
+            </button>
+          </footer>
+        )}
+      </section>
     </main>
   );
 }
