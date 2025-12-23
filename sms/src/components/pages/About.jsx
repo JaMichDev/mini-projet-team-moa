@@ -1,9 +1,56 @@
+import { useEffect, useState } from 'react';
+import apiClient from '../../api/apiClient';
 import { aproposInfo } from '../../data/index.js';
 
 export default function About() {
-  const { title, description, contact, stats } = aproposInfo;
+  const { title, description, contact } = aproposInfo;
   const { email, phone, programmeur } = contact;
-  const { totalEtudiants, totalMatieres, totalNotes, global, parMatiere } = stats;
+
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const data = await apiClient.getStats();
+        setStats(data);
+        setError(null);
+      } catch (err) {
+        setError(err.message || 'Erreur de récupération des statistiques');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const totalEtudiants = stats?.totalStudents ?? 0;
+  const totalMatieres = stats?.totalCourses ?? 0;
+  const totalNotes = stats?.totalGrades ?? 0;
+  const moyenne = stats?.avgGrade ?? stats?.global?.moyenne ?? 0;
+  const max = stats?.maxGrade ?? stats?.global?.max ?? 0;
+  const min = stats?.minGrade ?? stats?.global?.min ?? 0;
+  const parMatiere = stats?.gradesByCourse || [];
+
+  if (loading) {
+    return (
+      <main className="Main about-shell" style={{ padding: 32, textAlign: 'center' }}>
+        <div style={{ fontSize: 22, color: '#64748b' }}>Chargement des statistiques...</div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="Main about-shell" style={{ padding: 32, textAlign: 'center' }}>
+        <div style={{ fontSize: 22, color: '#dc2626', fontWeight: 700 }}>⚠️ Erreur</div>
+        <div style={{ marginTop: 12, color: '#64748b' }}>{error}</div>
+      </main>
+    );
+  }
 
   return (
     <main className="Main about-shell">
@@ -54,7 +101,7 @@ export default function About() {
         </div>
         <div className="about-card">
           <div className="metric-label">Moyenne générale</div>
-          <div className="metric-value" style={{ color: '#10b981' }}>{global.moyenne}/100</div>
+          <div className="metric-value" style={{ color: '#10b981' }}>{moyenne}</div>
         </div>
       </section>
 
@@ -62,11 +109,9 @@ export default function About() {
         <article className="about-card">
           <h2 style={{ margin: 0, marginBottom: 8 }}>📈 Statistiques détaillées</h2>
           <div className="stat-stack" style={{ gap: 10 }}>
-            <div className="metric-card"><div className="metric-label">Moyenne</div><div className="metric-value">{global.moyenne}</div></div>
-            <div className="metric-card"><div className="metric-label">Maximum</div><div className="metric-value">{global.max}</div></div>
-            <div className="metric-card"><div className="metric-label">Minimum</div><div className="metric-value">{global.min}</div></div>
-            <div className="metric-card"><div className="metric-label">Médiane</div><div className="metric-value">{global.median}</div></div>
-            <div className="metric-card"><div className="metric-label">Écart-type</div><div className="metric-value">{global.standardDeviation}</div></div>
+            <div className="metric-card"><div className="metric-label">Moyenne</div><div className="metric-value">{moyenne}</div></div>
+            <div className="metric-card"><div className="metric-label">Maximum</div><div className="metric-value">{max}</div></div>
+            <div className="metric-card"><div className="metric-label">Minimum</div><div className="metric-value">{min}</div></div>
           </div>
         </article>
 
@@ -77,21 +122,15 @@ export default function About() {
               <tr>
                 <th>Cours</th>
                 <th style={{ textAlign: 'right' }}>Records</th>
-                <th style={{ textAlign: 'right' }}>Average</th>
-                <th style={{ textAlign: 'right' }}>Max</th>
-                <th style={{ textAlign: 'right' }}>Min</th>
-                <th style={{ textAlign: 'right' }}>Median</th>
+                <th style={{ textAlign: 'right' }}>Moyenne</th>
               </tr>
             </thead>
             <tbody>
-              {Object.entries(parMatiere).map(([course, { count, moyenne, max, min, median }]) => (
-                <tr key={course}>
-                  <td>{course}</td>
-                  <td style={{ textAlign: 'right' }}>{count}</td>
-                  <td style={{ textAlign: 'right' }}>{moyenne}</td>
-                  <td style={{ textAlign: 'right' }}>{max}</td>
-                  <td style={{ textAlign: 'right' }}>{min}</td>
-                  <td style={{ textAlign: 'right' }}>{median}</td>
+              {parMatiere.map((item) => (
+                <tr key={item.courseName}>
+                  <td>{item.courseName}</td>
+                  <td style={{ textAlign: 'right' }}>{item.count}</td>
+                  <td style={{ textAlign: 'right' }}>{item.avgGrade}</td>
                 </tr>
               ))}
             </tbody>
