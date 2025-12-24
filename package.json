@@ -1,0 +1,15 @@
+{
+  "name": "mini-projet-team-moa",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix sms\"",
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix sms"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "mongoose": "^9.0.2"
+  }
+}
