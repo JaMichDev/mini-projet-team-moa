@@ -1,11 +1,21 @@
 .login-page {
   min-height: 100vh;
-  display: flex;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  /*
   align-items: center;
   justify-content: center;
   background: radial-gradient(circle at 20% 20%, #eef2ff 0%, #fff 40%),
               linear-gradient(135deg, #f8fafc 0%, #eef2f7 50%, #e2e8f0 100%);
-  padding: 24px;
+  display: flex;
+  */
+}
+
+.google-login-wrapper {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
 }
 
 .login-card {

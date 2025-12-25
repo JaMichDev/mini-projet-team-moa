@@ -2,13 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import { useAuth } from "../context/AuthContext.jsx";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const { login, loading } = useAuth();
+    //const { login, loading } = useAuth();
+    const { login, loginWithGoogle, loading } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -58,6 +60,25 @@ export default function Login() {
                         {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
+
+
+<div className="google-login-wrapper">
+  <GoogleLogin
+    useOneTap={false}
+    auto_select={false}
+    onSuccess={async (credentialResponse) => {
+      try {
+        await loginWithGoogle(credentialResponse.credential);
+        navigate("/home");
+      } catch (err) {
+        setError("Google login failed");
+      }
+    }}
+    onError={() => setError("Google login failed")}
+  />
+</div>
+
+
             </div>
         </div>
     );
