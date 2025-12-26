@@ -64,19 +64,19 @@ export default function Login() {
 
 <div className="google-login-wrapper">
   <GoogleLogin
-    useOneTap={false}
-    auto_select={false}
-    onSuccess={async (credentialResponse) => {
-      try {
-        await loginWithGoogle(credentialResponse.credential);
-        navigate("/home");
-      } catch (err) {
-        setError("Google login failed");
-      }
-    }}
-    onError={() => setError("Google login failed")}
-  />
+  onSuccess={(response) => {
+    console.log("GOOGLE SUCCESS RESPONSE:", response);
+    console.log("GOOGLE CREDENTIAL:", response.credential);
+    loginWithGoogle(response.credential);
+  }}
+  onError={() => {
+    console.error("GOOGLE LOGIN ERROR");
+  }}
+/>
 </div>
+
+
+
 
 
             </div>
